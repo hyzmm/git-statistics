@@ -11,7 +11,7 @@ name = "git-stats"
 path = "src/lib.rs"
 
 [dependencies]
-clap = { version = "4.4.4", features = ["derive"] }
-comfy-table = "7.0.1"
-git2 = "0.18.0"
-log = "0.4.20"
+clap = { version = "4", features = ["derive"] }
+comfy-table = "7"
+git2 = "0.18"
+log = "0.4"
