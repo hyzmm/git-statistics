@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use git2::{Commit, Diff, DiffOptions, Error, Repository};
 
-pub fn get_commits(repo: &Repository) -> Result<Vec<Commit>, git2::Error> {
+pub fn get_commits(repo: &Repository) -> Result<Vec<Commit>, Error> {
     let mut revwalk = repo.revwalk()?;
     revwalk.set_sorting(git2::Sort::TIME)?;
     revwalk.push_head()?;
@@ -57,7 +57,7 @@ fn author_unique_key(author: &git2::Signature) -> String {
 }
 
 
-pub fn get_all_user_commit_stats(repo: &Repository, commits: &Vec<Commit>, pathspec: Option<&Vec<String>>) -> Vec<(String, UserCommitStats)> {
+pub fn get_all_user_commits_stats(repo: &Repository, commits: &Vec<Commit>, pathspec: Option<&Vec<String>>) -> Vec<(String, UserCommitStats)> {
     let mut result: HashMap<String, UserCommitStats> = HashMap::new();
 
     for commit in commits {
