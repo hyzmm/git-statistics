@@ -1,9 +1,10 @@
 use std::error::Error;
-use comfy_table::presets::UTF8_FULL;
+
+use clap::{Parser, ValueEnum};
 use comfy_table::{Attribute, Cell, ContentArrangement, Table};
+use comfy_table::presets::UTF8_FULL;
 use git2::Repository;
 
-use clap::Parser;
 use git_statistics::stats::{get_all_user_commits_stats, get_commits, UserCommitStats};
 
 /// This tool provides comprehensive statistics for each user in the current repository.
@@ -15,27 +16,40 @@ use git_statistics::stats::{get_all_user_commits_stats, get_commits, UserCommitS
 /// - The number of insertions by each user.
 /// - The number of deletions by each user.
 ///
-/// The count statistics exclude merged branches, as well as moved and renamed files. You can also input a matching pattern to count specific file extensions.
+/// The count statistics exclude merged branches, as well as moved and renamed files. You can also input a matching pattern to count specific files.
 #[derive(Parser, Debug)]
 #[command(name = "git-stats")]
 #[command(bin_name = "git-stats")]
 #[command(version = "1.0")]
 #[command(verbatim_doc_comment)]
 struct Cli {
-    /// Limit the number of authors to show.
-    // #[arg(short, long)]
-    // max_count: Option<i32>,
-    /// A glob pattern to match against file paths. *.rs and src/*.rs etc.
-    #[arg(short, long)]
-    pattern: Option<Vec<String>>,
+    /// A glob pattern to match against file paths. src, *.rs, or src/**/*.rs etc.
+    #[arg(last = true)]
+    pathspec: Option<Vec<String>>,
+    /// Sort by the specified column. The default is unordered.
+    #[arg(short, long, value_enum)]
+    sort: Option<SortBy>,
+    /// Limit the number of ros to show.
+    #[arg(short = 'c', long)]
+    max_count: Option<usize>,
+}
+
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum SortBy {
+    Commits,
+    FilesChanged,
+    Insertions,
+    Deletions,
+    LinesChanged,
 }
 
 fn main() {
     let cli: Cli = Cli::parse();
-    print_stats_table(cli.pattern.as_ref()).unwrap();
+    print_stats_table(cli.pathspec.as_ref(), cli.sort, cli.max_count).unwrap();
 }
 
-fn print_stats_table(pattern: Option<&Vec<String>>) -> Result<(), Box<dyn Error>> {
+fn print_stats_table(patchspec: Option<&Vec<String>>, sort_by: Option<SortBy>, max_count: Option<usize>) -> Result<(), Box<dyn Error>> {
     let repo = Repository::discover(".");
     if let Ok(repo) = repo {
         if let Ok(commits) = get_commits(&repo) {
@@ -44,7 +58,25 @@ fn print_stats_table(pattern: Option<&Vec<String>>) -> Result<(), Box<dyn Error>
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .set_header(vec!["Author", "Commits", "Files Changed", "Insertions", "Deletions", "Lines Changed"].into_iter().map(|x| Cell::new(x).add_attribute(Attribute::Bold)).collect::<Vec<Cell>>());
 
-            let commit_stat = get_all_user_commits_stats(&repo, &commits, pattern);
+            let mut commit_stat = get_all_user_commits_stats(&repo, &commits, patchspec);
+
+            if let Some(sort_by) = sort_by {
+                commit_stat.sort_by_key(|(_, commit)| {
+                    match sort_by {
+                        SortBy::Commits => { commit.commits }
+                        SortBy::FilesChanged => { commit.files_changed }
+                        SortBy::Insertions => { commit.insertions }
+                        SortBy::Deletions => { commit.deletions }
+                        SortBy::LinesChanged => { commit.insertions + commit.deletions }
+                    }
+                });
+                commit_stat.reverse();
+            }
+
+            if let Some(max_count) = max_count {
+                commit_stat.truncate(max_count);
+            }
+
             let sum = commit_stat.iter().fold(UserCommitStats::default(), |acc, (_, stats)| {
                 UserCommitStats {
                     commits: acc.commits + stats.commits,
@@ -56,7 +88,7 @@ fn print_stats_table(pattern: Option<&Vec<String>>) -> Result<(), Box<dyn Error>
             });
 
             let cell_format = |x: usize, total: usize| {
-                let left_width = (total as i32).ilog10() as usize + 1;
+                let left_width = if total == 0 { 1 } else { (total as i32).ilog10() as usize + 1 };
                 const RIGHT_WIDTH: usize = 7;
                 if total == 0 {
                     return format!("{:<left_width$}{:>RIGHT_WIDTH$}", 0, "(0%)");
