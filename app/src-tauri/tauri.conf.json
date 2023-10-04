@@ -3,11 +3,11 @@
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:3000",
+    "devPath": "http://localhost:5173",
     "distDir": "../build"
   },
   "package": {
-    "productName": "git-stats",
+    "productName": "Git Statistics",
     "version": "0.1.0"
   },
   "tauri": {
