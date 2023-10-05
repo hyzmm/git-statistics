@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use git2::{Commit, Diff, DiffLineType, DiffOptions, Error, Repository};
 use globset::{Glob, GlobSetBuilder};
+use serde::Serialize;
 
 pub fn get_commits(repo: &Repository) -> Result<Vec<Commit>, Error> {
     let mut revwalk = repo.revwalk()?;
@@ -34,6 +35,7 @@ fn get_diff<'a>(repo: &'a Repository, commit: &Commit, pathspec: Option<&Vec<Str
     repo.diff_tree_to_tree(parent.as_ref(), child.as_ref(), Some(&mut opts))
 }
 
+#[derive(Serialize)]
 pub struct UserCommitStats {
     pub commits: usize,
     pub files_changed: usize,

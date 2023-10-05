@@ -1,36 +1,72 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+/* eslint-disable @typescript-eslint/naming-convention */
+import './App.css';
+import PieChart from './PieChart.tsx';
+
+let demo = [['HUA616436641', {
+	author: '',
+	commits: 2,
+	deletions: 69,
+	files_changed: 7,
+	insertions: 107,
+}], ['git_idreamsky', {
+	author: '',
+	commits: 1,
+	deletions: 0,
+	files_changed: 1,
+	insertions: 0,
+}], ['SCWR', {
+	author: '',
+	commits: 182,
+	deletions: 8526,
+	files_changed: 1184,
+	insertions: 25298,
+}], ['hyzm', {
+	author: '',
+	commits: 5,
+	deletions: 194,
+	files_changed: 41,
+	insertions: 1198,
+}], ['bob.liao', {
+	author: '',
+	commits: 13,
+	deletions: 34260,
+	files_changed: 92,
+	insertions: 9244,
+}], ['binary', {
+	author: '',
+	commits: 295,
+	deletions: 104801,
+	files_changed: 1609,
+	insertions: 140259,
+}], ['huanhua.li', {author: '', commits: 87, deletions: 19858, files_changed: 693, insertions: 67060}]];
+demo = demo.map(([author, stat]) => ({
+	...stat,
+	author,
+}));
+demo.sort((a, b) => a.commits - b.commits);
 
 function App() {
-  const [count, setCount] = useState(0)
+	return (
+		<div className='flex'>
+			<div className='drawer drawer-open w-screen'>
+				<input id='my-drawer-2' type='checkbox' className='drawer-toggle'/>
+				<div className='drawer-content items-center justify-center'>
+					{/* Page content here */}
+					<PieChart data={demo}/>
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-            <button className="btn btn-primary">Button</button>
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+				</div>
+				<div className='drawer-side'>
+					<label htmlFor='my-drawer-2' aria-label='close sidebar' className='drawer-overlay'/>
+					<ul className='menu p-4 w-80 min-h-full bg-base-200 text-base-content'>
+						{/* Sidebar content here */}
+						<li><a>Sidebar Item 1</a></li>
+						<li><a>Sidebar Item 2</a></li>
+					</ul>
+
+				</div>
+			</div>
+		</div>
+	);
 }
 
-export default App
+export default App;
