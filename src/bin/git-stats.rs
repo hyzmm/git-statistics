@@ -5,6 +5,7 @@ use clap::{Parser, ValueEnum};
 use comfy_table::{Attribute, Cell, ContentArrangement, Table};
 use comfy_table::presets::UTF8_FULL;
 use git2::Repository;
+use indicatif::ProgressBar;
 
 use git_statistics::stats::{get_all_user_commits_stats, get_commits, UserCommitStats};
 
@@ -75,12 +76,17 @@ fn print_stats_table(patchspec: Option<&Vec<String>>, exclusive: Option<&Vec<Str
     let repo = Repository::discover(".");
     if let Ok(repo) = repo {
         if let Ok(commits) = get_commits(&repo) {
+            let pb = ProgressBar::new(commits.len() as u64);
+
             let mut table = Table::new();
             table.load_preset(UTF8_FULL)
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .set_header(vec!["Author", "Commits", "Files Changed", "Insertions", "Deletions", "Lines Changed"].into_iter().map(|x| Cell::new(x).add_attribute(Attribute::Bold)).collect::<Vec<Cell>>());
 
-            let mut commit_stat = get_all_user_commits_stats(&repo, &commits, patchspec, exclusive);
+            let mut commit_stat = get_all_user_commits_stats(&repo, &commits, patchspec, exclusive, || {
+                pb.inc(1);
+            });
+            pb.finish();
 
             if let Some(sort_by) = sort_by {
                 commit_stat.sort_by_key(|(_, commit)| {

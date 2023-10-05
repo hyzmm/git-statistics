@@ -59,12 +59,14 @@ fn author_unique_key(author: &git2::Signature) -> String {
 }
 
 
-pub fn get_all_user_commits_stats(
+pub fn get_all_user_commits_stats<F>(
     repo: &Repository,
     commits: &Vec<Commit>,
     pathspec: Option<&Vec<String>>,
     exclusive: Option<&Vec<String>>,
-) -> Vec<(String, UserCommitStats)> {
+    progress_cb: F,
+) -> Vec<(String, UserCommitStats)> where
+    F: Fn() -> () {
     let exclusive = exclusive.and_then(|exclusive| {
         exclusive.iter().fold(GlobSetBuilder::new(), |mut set, ele| {
             if let Ok(glob) = Glob::new(ele) {
@@ -108,6 +110,7 @@ pub fn get_all_user_commits_stats(
                 }),
             ).unwrap();
         }
+        progress_cb();
     }
     result.into_iter().collect()
 }
