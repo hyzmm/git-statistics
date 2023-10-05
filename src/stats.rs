@@ -1,5 +1,7 @@
 use std::collections::HashMap;
-use git2::{Commit, Diff, DiffOptions, Error, Repository};
+
+use git2::{Commit, Diff, DiffLineType, DiffOptions, Error, Repository};
+use globset::{Glob, GlobSetBuilder};
 
 pub fn get_commits(repo: &Repository) -> Result<Vec<Commit>, Error> {
     let mut revwalk = repo.revwalk()?;
@@ -57,7 +59,20 @@ fn author_unique_key(author: &git2::Signature) -> String {
 }
 
 
-pub fn get_all_user_commits_stats(repo: &Repository, commits: &Vec<Commit>, pathspec: Option<&Vec<String>>) -> Vec<(String, UserCommitStats)> {
+pub fn get_all_user_commits_stats(
+    repo: &Repository,
+    commits: &Vec<Commit>,
+    pathspec: Option<&Vec<String>>,
+    exclusive: Option<&Vec<String>>,
+) -> Vec<(String, UserCommitStats)> {
+    let exclusive = exclusive.and_then(|exclusive| {
+        exclusive.iter().fold(GlobSetBuilder::new(), |mut set, ele| {
+            if let Ok(glob) = Glob::new(ele) {
+                set.add(glob);
+            }
+            set
+        }).build().ok()
+    });
     let mut result: HashMap<String, UserCommitStats> = HashMap::new();
 
     for commit in commits {
@@ -65,14 +80,33 @@ pub fn get_all_user_commits_stats(repo: &Repository, commits: &Vec<Commit>, path
         let entry = result.entry(author_unique_key(&author)).or_default();
         entry.commits += 1;
 
-        if let Ok(stats) = get_diff(repo, commit, pathspec).map(|mut diff| {
+        if let Ok(mut diff) = get_diff(repo, commit, pathspec) {
             // Exclusion of renamed and copied files from statistics
             let _ = diff.find_similar(None);
-            diff.stats()
-        }).flatten() {
-            entry.files_changed += stats.files_changed();
-            entry.insertions += stats.insertions();
-            entry.deletions += stats.deletions();
+            diff.foreach(
+                &mut |_delta, _| {
+                    entry.files_changed += 1;
+                    true
+                },
+                None,
+                None,
+                Some(&mut |delta, _hunk, line| {
+                    let filename = delta.new_file().path().unwrap();
+                    if let Some(exclusive) = &exclusive {
+                        if exclusive.is_match(filename) {
+                            // println!("exclude file {:?}", filename);
+                            return true;
+                        }
+                    }
+
+                    match line.origin_value() {
+                        DiffLineType::Addition => { entry.insertions += 1; }
+                        DiffLineType::Deletion => { entry.deletions += 1; }
+                        _ => {}
+                    }
+                    true
+                }),
+            ).unwrap();
         }
     }
     result.into_iter().collect()

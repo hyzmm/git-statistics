@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::ops::Not;
 
 use clap::{Parser, ValueEnum};
 use comfy_table::{Attribute, Cell, ContentArrangement, Table};
@@ -24,6 +25,9 @@ use git_statistics::stats::{get_all_user_commits_stats, get_commits, UserCommitS
 #[command(verbatim_doc_comment)]
 struct Cli {
     /// A glob pattern to match against file paths. src, *.rs, or src/**/*.rs etc.
+    ///
+    /// Start with `:!` to exclude the specified files, for example: `git stats -- :!src/assets/*`
+    /// to exclude all files under `src/assets`.
     #[arg(last = true)]
     pathspec: Option<Vec<String>>,
     /// Sort by the specified column. The default is unordered.
@@ -46,10 +50,28 @@ enum SortBy {
 
 fn main() {
     let cli: Cli = Cli::parse();
-    print_stats_table(cli.pathspec.as_ref(), cli.sort, cli.max_count).unwrap();
+
+    let inclusive;
+    let exclusive;
+
+    if let Some(pathspec) = cli.pathspec {
+        let (a, b) = parse_pathspec(pathspec);
+        inclusive = Some(a);
+        exclusive = Some(b);
+    } else {
+        inclusive = None;
+        exclusive = None;
+    }
+
+    print_stats_table(
+        inclusive.as_ref(),
+        exclusive.as_ref(),
+        cli.sort,
+        cli.max_count,
+    ).unwrap();
 }
 
-fn print_stats_table(patchspec: Option<&Vec<String>>, sort_by: Option<SortBy>, max_count: Option<usize>) -> Result<(), Box<dyn Error>> {
+fn print_stats_table(patchspec: Option<&Vec<String>>, exclusive: Option<&Vec<String>>, sort_by: Option<SortBy>, max_count: Option<usize>) -> Result<(), Box<dyn Error>> {
     let repo = Repository::discover(".");
     if let Ok(repo) = repo {
         if let Ok(commits) = get_commits(&repo) {
@@ -58,7 +80,7 @@ fn print_stats_table(patchspec: Option<&Vec<String>>, sort_by: Option<SortBy>, m
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .set_header(vec!["Author", "Commits", "Files Changed", "Insertions", "Deletions", "Lines Changed"].into_iter().map(|x| Cell::new(x).add_attribute(Attribute::Bold)).collect::<Vec<Cell>>());
 
-            let mut commit_stat = get_all_user_commits_stats(&repo, &commits, patchspec);
+            let mut commit_stat = get_all_user_commits_stats(&repo, &commits, patchspec, exclusive);
 
             if let Some(sort_by) = sort_by {
                 commit_stat.sort_by_key(|(_, commit)| {
@@ -118,4 +140,29 @@ fn print_stats_table(patchspec: Option<&Vec<String>>, sort_by: Option<SortBy>, m
     }
 
     Ok(())
+}
+
+/// Parse `pathspec` argument, split into (pathspec, exclusive)
+fn parse_pathspec(pathspec: Vec<String>) -> (Vec<String>, Vec<String>) {
+    let (inclusive, exclusive): (Vec<String>, Vec<String>) = pathspec.into_iter().partition(|e| e.starts_with(":!").not());
+    let exclusive = exclusive.iter().map(|e| e[2..].to_owned()).collect();
+    (inclusive, exclusive)
+}
+
+#[test]
+fn test_parse_pathspec() {
+    let (inclusive, exclusive) = parse_pathspec(vec![]);
+    assert!(inclusive.is_empty());
+    assert!(exclusive.is_empty());
+
+    let (inclusive, exclusive) = parse_pathspec(vec!["src".to_string()]);
+    assert_eq!(inclusive.len(), 1);
+    assert_eq!(inclusive.first().unwrap(), "src");
+    assert!(exclusive.is_empty());
+
+    let (inclusive, exclusive) = parse_pathspec(vec!["src".to_string(), ":!src/assets".to_string()]);
+    assert_eq!(inclusive.len(), 1);
+    assert_eq!(inclusive.first().unwrap(), "src");
+    assert_eq!(exclusive.len(), 1);
+    assert_eq!(exclusive.first().unwrap(), "src/assets");
 }
