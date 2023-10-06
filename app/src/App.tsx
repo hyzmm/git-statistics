@@ -1,58 +1,41 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+
 import './App.css';
 import Chart from './Chart.tsx';
-
-let demo = [['HUA616436641', {
-	author: '',
-	commits: 2,
-	deletions: 69,
-	files_changed: 7,
-	insertions: 107,
-}], ['git_idreamsky', {
-	author: '',
-	commits: 1,
-	deletions: 0,
-	files_changed: 1,
-	insertions: 0,
-}], ['SCWR', {
-	author: '',
-	commits: 182,
-	deletions: 8526,
-	files_changed: 1184,
-	insertions: 25298,
-}], ['hyzm', {
-	author: '',
-	commits: 5,
-	deletions: 194,
-	files_changed: 41,
-	insertions: 1198,
-}], ['bob.liao', {
-	author: '',
-	commits: 13,
-	deletions: 34260,
-	files_changed: 92,
-	insertions: 9244,
-}], ['binary', {
-	author: '',
-	commits: 295,
-	deletions: 104801,
-	files_changed: 1609,
-	insertions: 140259,
-}], ['huanhua.li', {author: '', commits: 87, deletions: 19858, files_changed: 693, insertions: 67060}]];
-demo = demo.map(([author, stat]) => ({
-	...stat,
-	author,
-}));
-demo.sort((a, b) => a.commits - b.commits);
-
+import {useEffect, useState} from 'react';
+import {type UserStat} from './types.ts';
+import menuEventEmitter, {handleOpenRepo} from './menu.ts';
+import {MenuEvent} from './events.ts';
 function App() {
+	const [data, setData] = useState<UserStat[] | undefined>();
+
+	useEffect(() => {
+		function cb(data: UserStat[]) {
+			setData(data);
+		}
+
+		menuEventEmitter.on(MenuEvent.OPEN, cb);
+		return () => {
+			menuEventEmitter.off(MenuEvent.OPEN, cb);
+		};
+	});
+
+	if (!data) {
+		return (
+			<div className='container flex flex-col justify-center items-center w-full h-full gap-2'>
+				<h1 className='text-4xl'>Welcome to <b>Git Statistic</b></h1>
+				<p className='mb-2'>Please open a repository first.</p>
+				<button className='btn btn-wide btn-primary' onClick={handleOpenRepo}>Open Repository...</button>
+			</div>
+		);
+	}
+
 	return (
 		<div className='flex'>
 			<div className='drawer drawer-open w-screen'>
 				<input id='my-drawer-2' type='checkbox' className='drawer-toggle'/>
 				<div className='drawer-content items-center justify-center'>
 					{/* Page content here */}
-					<Chart data={demo}/>
+					<Chart data={data}/>
 
 				</div>
 				<div className='drawer-side'>

@@ -37,6 +37,7 @@ module.exports = {
         'react',
     ],
     rules: {
+        "react/button-has-type": "off",
         "react/react-in-jsx-scope": "off"
     },
 };

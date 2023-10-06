@@ -16,6 +16,7 @@
     "@tauri-apps/api": "^1.5.0",
     "@uidotdev/usehooks": "^2.3.1",
     "echarts": "^5.4.3",
+    "eventemitter3": "^5.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
