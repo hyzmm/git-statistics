@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import './App.css';
-import PieChart from './PieChart.tsx';
+import Chart from './Chart.tsx';
 
 let demo = [['HUA616436641', {
 	author: '',
@@ -52,7 +52,7 @@ function App() {
 				<input id='my-drawer-2' type='checkbox' className='drawer-toggle'/>
 				<div className='drawer-content items-center justify-center'>
 					{/* Page content here */}
-					<PieChart data={demo}/>
+					<Chart data={demo}/>
 
 				</div>
 				<div className='drawer-side'>

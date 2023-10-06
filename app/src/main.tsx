@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import '@icon-park/react/styles/index.css';
+
 import {invoke} from '@tauri-apps/api';
 import {type UserStat} from './types.ts';
 
