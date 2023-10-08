@@ -37,7 +37,7 @@ export default function Chart({data}: PieChartProps) {
 				ref={ref} className='w-full h-full'/>
 			{/* switch button */}
 			<label
-				className='absolute z-10 right-2 bottom-2 btn btn-sm btn-primary btn-circle swap swap-rotate'
+				className='absolute z-10 right-2 bottom-10 btn btn-sm btn-primary btn-circle swap swap-rotate'
 			>
 				<input
 					type='checkbox'
@@ -64,11 +64,8 @@ function getBarChartOptions(data: UserStat[]): echarts.EChartsOption {
 		align: 'left',
 		verticalAlign: 'middle',
 		rotate: 90,
-		formatter: '{c}  {name|{a}}',
+		formatter: '{c}',
 		fontSize: 16,
-		rich: {
-			name: {},
-		},
 	};
 
 	return {
@@ -142,6 +139,7 @@ function getBarChartOptions(data: UserStat[]): echarts.EChartsOption {
 				name: 'Insertions',
 				type: 'bar',
 				label: labelOption,
+				color: '#3ba272',
 				emphasis: {
 					focus: 'series',
 				},
@@ -150,6 +148,7 @@ function getBarChartOptions(data: UserStat[]): echarts.EChartsOption {
 			{
 				name: 'Deletions',
 				type: 'bar',
+				color: '#ee6666',
 				label: labelOption,
 				emphasis: {
 					focus: 'series',
@@ -225,6 +224,8 @@ function getPieChartOptions(data: UserStat[]): echarts.EChartsOption {
 		legend: {
 			data: data.map(e => e.author),
 			bottom: 10,
+			type: 'scroll',
+			orient: 'horizontal',
 		},
 		xAxis: undefined,
 		dataZoom: [],
