@@ -1,9 +1,7 @@
-import {listen} from '@tauri-apps/api/event';
 import {MenuEvent} from './events.ts';
 import {dialog, invoke, window} from '@tauri-apps/api';
 import {type UserStat} from './types.ts';
 import {PathUtils} from './utils.ts';
-import {register} from '@tauri-apps/api/globalShortcut';
 import EventEmitter from 'eventemitter3';
 
 const menuEventEmitter = new EventEmitter();
@@ -36,7 +34,3 @@ export async function openRepo(repo: string) {
 	await window.appWindow.setTitle(`Git Statistics: ${await PathUtils.convertToTildePath(repo)}`);
 }
 
-export function startListenOpenRepo() {
-	void register('CommandOrControl+O', pickRepo).then();
-	void listen(MenuEvent.OPEN, pickRepo).then();
-}

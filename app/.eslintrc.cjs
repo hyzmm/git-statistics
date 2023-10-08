@@ -38,6 +38,7 @@ module.exports = {
     ],
     rules: {
         "react/button-has-type": "off",
-        "react/react-in-jsx-scope": "off"
+        "react/react-in-jsx-scope": "off",
+        "default-case": "off",
     },
 };

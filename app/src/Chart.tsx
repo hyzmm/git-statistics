@@ -31,6 +31,7 @@ export default function Chart({data}: PieChartProps) {
 			window.removeEventListener('resize', cb);
 		};
 	}, []);
+
 	return (
 		<div className='w-full h-full relative'>
 			<div
@@ -107,13 +108,13 @@ function getBarChartOptions(data: UserStat[]): echarts.EChartsOption {
 				show: true,
 				realtime: true,
 				start: 0,
-				end: 100,
+				end: 4 / data.length * 100,
 			},
 			{
 				type: 'inside',
 				realtime: true,
 				start: 0,
-				end: 100,
+				end: 4 / data.length * 100,
 			},
 		],
 		series: [

@@ -1,3 +1,5 @@
 #root {
     height: 100vh;
+    user-select: none;
+    cursor: default;
 }
