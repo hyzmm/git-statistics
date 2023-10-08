@@ -9,7 +9,7 @@ import EventEmitter from 'eventemitter3';
 const menuEventEmitter = new EventEmitter();
 export default menuEventEmitter;
 
-export async function handleOpenRepo() {
+export async function pickRepo() {
 	const repo = await dialog.open({
 		directory: true,
 	}) as string | undefined;
@@ -17,6 +17,10 @@ export async function handleOpenRepo() {
 		return;
 	}
 
+	await openRepo(repo);
+}
+
+export async function openRepo(repo: string) {
 	void invoke<Array<[string, UserStat]>>('git_stats', {repo})
 		.then(response => {
 			const data = response.map(([author, stat]) => ({
@@ -24,6 +28,7 @@ export async function handleOpenRepo() {
 				author,
 			}));
 			menuEventEmitter.emit(MenuEvent.OPEN, data);
+			localStorage.setItem('repo', repo);
 		}).catch((err: string) => {
 			void dialog.message(err, {type: 'error', title: 'Error'});
 		});
@@ -32,6 +37,6 @@ export async function handleOpenRepo() {
 }
 
 export function startListenOpenRepo() {
-	void register('CommandOrControl+O', handleOpenRepo).then();
-	void listen(MenuEvent.OPEN, handleOpenRepo).then();
+	void register('CommandOrControl+O', pickRepo).then();
+	void listen(MenuEvent.OPEN, pickRepo).then();
 }

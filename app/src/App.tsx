@@ -3,11 +3,20 @@ import './App.css';
 import Chart from './Chart.tsx';
 import {useEffect, useState} from 'react';
 import {type UserStat} from './types.ts';
-import menuEventEmitter, {handleOpenRepo} from './menu.ts';
+import menuEventEmitter, {openRepo, pickRepo} from './menu.ts';
 import {MenuEvent} from './events.ts';
 function App() {
 	const [data, setData] = useState<UserStat[] | undefined>();
 
+	// Open last repo
+	useEffect(() => {
+		const repo = localStorage.getItem('repo');
+		if (repo) {
+			void openRepo(repo).then();
+		}
+	}, []);
+
+	// Listen to open repo event
 	useEffect(() => {
 		function cb(data: UserStat[]) {
 			setData(data);
@@ -17,7 +26,7 @@ function App() {
 		return () => {
 			menuEventEmitter.off(MenuEvent.OPEN, cb);
 		};
-	});
+	}, []);
 
 	if (!data) {
 		return (
