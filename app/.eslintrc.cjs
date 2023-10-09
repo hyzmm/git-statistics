@@ -40,5 +40,6 @@ module.exports = {
         "react/button-has-type": "off",
         "react/react-in-jsx-scope": "off",
         "default-case": "off",
+        "react/no-array-index-key": "off",
     },
 };

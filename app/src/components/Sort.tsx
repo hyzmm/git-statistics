@@ -10,15 +10,9 @@ export default function Sort() {
 
 	const dropdownRef = useRef<HTMLDetailsElement>(null);
 	return (
-		<div className='flex items-center'>
-			<span
-				className='flex justify-between font-bold' style={{
-					width: 53,
-					marginRight: 10,
-				}}
-			>
-				<span>Sort</span>
-				<span>by</span>
+		<div className='flex items-center gap-2 px-4'>
+			<span className='font-medium'>
+				Sort by
 			</span>
 
 			<details ref={dropdownRef} className='dropdown'>

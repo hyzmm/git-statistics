@@ -11,23 +11,24 @@ export default function CountLimit() {
 	})));
 
 	return (
-		<div className='flex items-center gap-2 mb-1'>
+		<div className='flex items-center gap-2 px-4 font-medium'>
 			<input
 				checked={settings.countLimitationEnabled} type='checkbox' className='toggle toggle-xs'
 				onChange={() => {
 					settings.setCountLimitationEnabled(!settings.countLimitationEnabled);
 				}}/>
-			<span className='font-bold'>Top</span>
+			<span>Top</span>
 			<NumberInput
 				disabled={!settings.countLimitationEnabled}
 				defaultValue={settings.countLimitation}
 				min={0}
 				max={100}
-				className='w-[92px]'
+				className='w-16'
 				onConfirm={value => {
 					settings.setCountLimitation(value);
 				}}
 			/>
+			<span>Users</span>
 
 		</div>
 	);

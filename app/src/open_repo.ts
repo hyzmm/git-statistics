@@ -18,8 +18,9 @@ export async function pickRepo() {
 	await openRepo(repo);
 }
 
-export async function openRepo(repo: string) {
-	void invoke<Array<[string, UserStat]>>('git_stats', {repo})
+export async function openRepo(repo: string, includedPaths?: string[], excludedPaths?: string[]) {
+	console.log('openRepo', repo, includedPaths, excludedPaths);
+	void invoke<Array<[string, UserStat]>>('git_stats', {repo, pathspec: includedPaths, exclusive: excludedPaths})
 		.then(response => {
 			const data = response.map(([author, stat]) => ({
 				...stat,

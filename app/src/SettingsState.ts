@@ -14,9 +14,15 @@ export type SettingsState = {
 	countLimitation: number;
 	sortBy: SortBy;
 
+	includedPaths: string[];
+	excludedPaths: string[];
+
 	setCountLimitationEnabled(enabled: boolean): void;
 	setCountLimitation(value: number): void;
 	setSortBy(sortBy: SortBy): void;
+
+	setIncludedPaths(paths: string[]): void;
+	setExcludedPaths(paths: string[]): void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -26,6 +32,8 @@ export const useSettingsStore = create<SettingsState>()(
 				countLimitationEnabled: true,
 				countLimitation: 10,
 				sortBy: SortBy.Commits,
+				includedPaths: [],
+				excludedPaths: [],
 
 				setCountLimitationEnabled(enabled: boolean) {
 					set({
@@ -40,6 +48,16 @@ export const useSettingsStore = create<SettingsState>()(
 				setSortBy(sortBy: SortBy) {
 					set({
 						sortBy,
+					});
+				},
+				setIncludedPaths(paths: string[]) {
+					set({
+						includedPaths: paths,
+					});
+				},
+				setExcludedPaths(paths: string[]) {
+					set({
+						excludedPaths: paths,
 					});
 				},
 			}),
