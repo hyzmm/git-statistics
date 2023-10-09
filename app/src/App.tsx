@@ -9,6 +9,7 @@ import {useHotkeys} from 'react-hotkeys-hook';
 import {SortBy, useSettingsStore} from './SettingsState.ts';
 import {useShallow} from 'zustand/react/shallow';
 import Sort from './components/Sort.tsx';
+import Summary from './components/Summary.tsx';
 
 function App() {
 	const [data, setData] = useState<UserStat[] | undefined>();
@@ -92,14 +93,14 @@ function App() {
 				</div>
 				<div className='drawer-side bg-base-200'>
 					<label htmlFor='my-drawer-2' aria-label='close sidebar' className='drawer-overlay'/>
-					<div className='menu z-[0] p-4 w-80 min-h-full text-base-content gap-1'>
+					<div className='menu z-[0] p-4 w-80 min-h-full text-base-content gap-2'>
+						<Summary data={data!}/>
 						<CountLimit/>
 						<Sort/>
 						{/* Sidebar content here */}
 						<li><a>Sidebar Item 1</a></li>
 						<li><a>Sidebar Item 2</a></li>
 					</div>
-
 				</div>
 			</div>
 		</div>
