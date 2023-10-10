@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ops::Not;
 
 use git2::{Commit, Diff, DiffLineType, DiffOptions, Error, Repository};
 use globset::{Glob, GlobSetBuilder};
@@ -71,6 +72,13 @@ pub fn get_all_user_commits_stats<F>(
     F: Fn() -> () {
     let exclusive = exclusive.and_then(|exclusive| {
         exclusive.iter().fold(GlobSetBuilder::new(), |mut set, ele| {
+            if ele.is_empty() { return set; }
+            if ele.ends_with("/**").not() {
+                if let Ok(glob) = Glob::new(format!("{ele}/**").as_str()){
+                    set.add(glob);
+                }
+            }
+
             if let Ok(glob) = Glob::new(ele) {
                 set.add(glob);
             }

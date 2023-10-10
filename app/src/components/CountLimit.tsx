@@ -29,7 +29,6 @@ export default function CountLimit() {
 				}}
 			/>
 			<span>Users</span>
-
 		</div>
 	);
 }
