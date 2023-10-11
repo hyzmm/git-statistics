@@ -7,6 +7,7 @@ repository = "https://github.com/hyzmm/git-statistics.git"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
+path = "src/bin/git-stats.rs"
 name = "git-stats"
 [lib]
 path = "src/lib.rs"
