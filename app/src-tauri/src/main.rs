@@ -27,11 +27,8 @@ fn main() {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![git_stats])
+        .invoke_handler(tauri::generate_handler![git::git_stats])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-fn git_stats(repo: String, pathspec: Option<Vec<String>>, exclusive: Option<Vec<String>>) -> Result<Vec<(String, UserCommitStats)>, String> {
-    git::git_stats(repo, pathspec, exclusive).map_err(|e| e.to_string())
-}

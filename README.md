@@ -127,6 +127,6 @@ Here are some screenshots of the app:
 
 ## TODO
 
-- To optimize the speed of commit traversal, the current speed of traversing large projects is much slower than the Git CLI. Especially on the app, it blocks the UI thead.
+- To optimize the speed of commit traversal, the current speed of traversing large projects is much slower than the Git CLI. 
 - More statistical methods.
 - Provide more installation channels.
