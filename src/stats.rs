@@ -1,126 +1,83 @@
-use std::collections::HashMap;
-use std::ops::Not;
+use std::path::Path;
+use std::process::Command;
 
-use git2::{Commit, Diff, DiffLineType, DiffOptions, Error, Repository};
-use globset::{Glob, GlobSetBuilder};
+use itertools::Itertools;
 use serde::Serialize;
 
-pub fn get_commits(repo: &Repository) -> Result<Vec<Commit>, Error> {
-    let mut revwalk = repo.revwalk()?;
-    revwalk.set_sorting(git2::Sort::TIME)?;
-    revwalk.push_head()?;
-    Ok(revwalk.into_iter().filter_map(|oid| {
-        if let Ok(oid) = oid {
-            return repo.find_commit(oid).ok().and_then(|commit| {
-                if commit.parent_count() > 1 {
-                    None
-                } else {
-                    Some(commit)
-                }
-            });
-        } else {
-            None
-        }
-    }).collect())
-}
-
-fn get_diff<'a>(repo: &'a Repository, commit: &Commit, pathspec: Option<&Vec<String>>) -> Result<Diff<'a>, Error> {
-    let parent = commit.parent(0);
-    let (parent, child) = (parent.ok().map(|e| e.tree().ok()).flatten(), commit.tree().ok());
-    let mut opts = DiffOptions::new();
-    if let Some(pathspec) = pathspec {
-        for pattern in pathspec {
-            opts.pathspec(pattern);
-        }
-    }
-    repo.diff_tree_to_tree(parent.as_ref(), child.as_ref(), Some(&mut opts))
+#[derive(Serialize)]
+pub struct FilesChanged {
+    pub insertions: usize,
+    pub deletions: usize,
+    pub filename: String,
 }
 
 #[derive(Serialize)]
-pub struct UserCommitStats {
-    pub commits: usize,
-    pub files_changed: usize,
+pub struct Commit {
+    pub author: String,
+    pub files_changed_list: Vec<FilesChanged>,
     pub insertions: usize,
     pub deletions: usize,
-    pub author: String,
+    pub files_changed: usize,
 }
 
-impl Default for UserCommitStats {
-    fn default() -> Self {
-        Self {
-            commits: 0,
-            files_changed: 0,
-            insertions: 0,
-            deletions: 0,
-            author: String::default(),
-        }
-    }
-}
-
-fn author_unique_key(author: &git2::Signature) -> String {
-    String::from(author.name().or_else(|| author.email()).unwrap_or("unknown"))
-}
-
-
-pub fn get_all_user_commits_stats<F>(
-    repo: &Repository,
-    commits: &Vec<Commit>,
+pub fn get_commits<P: AsRef<Path>>(
+    repo: P,
     pathspec: Option<&Vec<String>>,
-    exclusive: Option<&Vec<String>>,
-    progress_cb: F,
-) -> Vec<(String, UserCommitStats)> where
-    F: Fn() -> () {
-    let exclusive = exclusive.and_then(|exclusive| {
-        exclusive.iter().fold(GlobSetBuilder::new(), |mut set, ele| {
-            if ele.is_empty() { return set; }
-            if ele.ends_with("/**").not() {
-                if let Ok(glob) = Glob::new(format!("{ele}/**").as_str()){
-                    set.add(glob);
-                }
-            }
+) -> Result<Vec<Commit>, String>
+{
+    let mut cmd = Command::new("git");
 
-            if let Ok(glob) = Glob::new(ele) {
-                set.add(glob);
-            }
-            set
-        }).build().ok()
-    });
-    let mut result: HashMap<String, UserCommitStats> = HashMap::new();
-
-    for commit in commits {
-        let author = commit.author();
-        let entry = result.entry(author_unique_key(&author)).or_default();
-        entry.commits += 1;
-
-        if let Ok(mut diff) = get_diff(repo, commit, pathspec) {
-            // Exclusion of renamed and copied files from statistics
-            let _ = diff.find_similar(None);
-            diff.foreach(
-                &mut |_delta, _| {
-                    entry.files_changed += 1;
-                    true
-                },
-                None,
-                None,
-                Some(&mut |delta, _hunk, line| {
-                    let filename = delta.new_file().path().unwrap();
-                    if let Some(exclusive) = &exclusive {
-                        if exclusive.is_match(filename) {
-                            // println!("exclude file {:?}", filename);
-                            return true;
-                        }
-                    }
-
-                    match line.origin_value() {
-                        DiffLineType::Addition => { entry.insertions += 1; }
-                        DiffLineType::Deletion => { entry.deletions += 1; }
-                        _ => {}
-                    }
-                    true
-                }),
-            ).unwrap();
-        }
-        progress_cb();
+    cmd.current_dir(repo)
+        .arg("log")
+        .arg("--no-merges")
+        .arg("--format=author %aN")
+        .arg("--numstat")
+        .arg("--")
+    ;
+    if let Some(pathspec) = pathspec {
+        cmd.args(pathspec);
     }
-    result.into_iter().collect()
+
+    // println!("cmd: {:?}", cmd);
+    let output = cmd.output().expect("failed to execute process");
+
+    if !output.status.success() {
+        return Err(String::from_utf8(output.stderr).unwrap());
+    }
+
+    Ok(parse_git_log(&String::from_utf8(output.stdout).unwrap()))
+}
+
+fn parse_git_log(log: &String) -> Vec<Commit> {
+    let mut commits = vec![];
+
+    for line in log.lines() {
+        if line.is_empty() { continue; }
+
+        if line.starts_with("author ") {
+            let author = line.trim_start_matches("author ");
+            commits.push(Commit {
+                author: String::from(author),
+                insertions: 0,
+                deletions: 0,
+                files_changed: 0,
+                files_changed_list: vec![],
+            });
+        } else {
+            let commit = commits.last_mut().unwrap();
+            let (insertions, deletions, file) = line.splitn(3, '\t').collect_tuple().unwrap();
+            let insertions = insertions.parse::<usize>().unwrap_or(0);
+            let deletions = deletions.parse::<usize>().unwrap_or(0);
+            commit.insertions += insertions;
+            commit.deletions += deletions;
+            commit.files_changed += 1;
+            commit.files_changed_list.push(FilesChanged {
+                insertions,
+                deletions,
+                filename: String::from(file),
+            });
+        }
+    }
+
+    commits
 }

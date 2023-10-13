@@ -1,4 +1,3 @@
 #![feature(result_flattening)]
-
-pub type Repository = git2::Repository;
+#![feature(iter_array_chunks)]
 pub mod stats;
