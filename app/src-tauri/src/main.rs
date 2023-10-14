@@ -4,6 +4,7 @@
 use std::borrow::BorrowMut;
 
 use tauri::{CustomMenuItem, Menu, MenuEntry};
+
 use crate::events::EVENT_MENU_OPEN;
 
 mod git;
@@ -26,7 +27,7 @@ fn main() {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![git::git_stats])
+        .invoke_handler(tauri::generate_handler![git::git_stats, git::git_total_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

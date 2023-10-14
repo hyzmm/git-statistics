@@ -1,11 +1,11 @@
 import {useEffect, useRef, useState} from 'react';
 import * as echarts from 'echarts';
-import {type UserStat} from './types.ts';
+import {type Commit} from './types.ts';
 import {type SeriesLabelOption} from 'echarts/types/src/util/types';
 import {ChartHistogramTwo, ChartProportion} from '@icon-park/react';
 
 type PieChartProps = {
-	readonly data: UserStat[];
+	readonly data: Commit[];
 };
 
 export default function Chart({data}: PieChartProps) {
@@ -57,7 +57,7 @@ export default function Chart({data}: PieChartProps) {
 	);
 }
 
-function getBarChartOptions(data: UserStat[]): echarts.EChartsOption {
+function getBarChartOptions(data: Commit[]): echarts.EChartsOption {
 	const labelOption: echarts.BarSeriesOption['label'] = {
 		show: true,
 		position: 'insideBottom',
@@ -169,7 +169,7 @@ function getBarChartOptions(data: UserStat[]): echarts.EChartsOption {
 	};
 }
 
-function getPieChartOptions(data: UserStat[]): echarts.EChartsOption {
+function getPieChartOptions(data: Commit[]): echarts.EChartsOption {
 	const labelOptions: SeriesLabelOption = {
 		show: false,
 		formatter: '{a|{a}}{abg|}\n{hr|}\n  {b|{b}：}{c}  {per|{d}%}  ',

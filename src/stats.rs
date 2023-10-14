@@ -65,7 +65,7 @@ fn parse_git_log(log: &String) -> Vec<Commit> {
             });
         } else {
             let commit = commits.last_mut().unwrap();
-            let (insertions, deletions, file) = line.splitn(3, '\t').collect_tuple().unwrap();
+            let (insertions, deletions, _file) = line.splitn(3, '\t').collect_tuple().unwrap();
             let insertions = insertions.parse::<usize>().unwrap_or(0);
             let deletions = deletions.parse::<usize>().unwrap_or(0);
             commit.insertions += insertions;
