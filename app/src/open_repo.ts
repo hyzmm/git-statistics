@@ -18,15 +18,12 @@ export async function pickRepo() {
 	await openRepo(repo);
 }
 
-export async function openRepo(repo: string, includedPaths?: string[], excludedPaths?: string[]) {
+export async function openRepo(repo: string, includedPaths: string[] = [], excludedPaths: string[] = []) {
+	includedPaths = [...includedPaths, ...excludedPaths.map(path => `:!${path}`)];
 	console.log('openRepo', repo, includedPaths, excludedPaths);
-	void invoke<Array<[string, UserStat]>>('git_stats', {repo, pathspec: includedPaths, exclusive: excludedPaths})
+	void invoke<Array<[string, UserStat]>>('git_stats', {repo, pathspec: includedPaths})
 		.then(response => {
-			const data = response.map(([author, stat]) => ({
-				...stat,
-				author,
-			}));
-			menuEventEmitter.emit(MenuEvent.OPEN, data);
+			menuEventEmitter.emit(MenuEvent.OPEN, response);
 			localStorage.setItem('repo', repo);
 		}).catch((err: string) => {
 			void dialog.message(err, {type: 'error', title: 'Error'});

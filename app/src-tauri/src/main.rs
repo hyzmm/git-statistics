@@ -3,7 +3,6 @@
 
 use std::borrow::BorrowMut;
 
-use git_statistics::stats::UserCommitStats;
 use tauri::{CustomMenuItem, Menu, MenuEntry};
 use crate::events::EVENT_MENU_OPEN;
 

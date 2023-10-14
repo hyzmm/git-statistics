@@ -14,7 +14,7 @@ pub struct FilesChanged {
 #[derive(Serialize)]
 pub struct Commit {
     pub author: String,
-    pub files_changed_list: Vec<FilesChanged>,
+    // pub files_changed_list: Vec<FilesChanged>,
     pub insertions: usize,
     pub deletions: usize,
     pub files_changed: usize,
@@ -61,7 +61,7 @@ fn parse_git_log(log: &String) -> Vec<Commit> {
                 insertions: 0,
                 deletions: 0,
                 files_changed: 0,
-                files_changed_list: vec![],
+                // files_changed_list: vec![],
             });
         } else {
             let commit = commits.last_mut().unwrap();
@@ -71,11 +71,11 @@ fn parse_git_log(log: &String) -> Vec<Commit> {
             commit.insertions += insertions;
             commit.deletions += deletions;
             commit.files_changed += 1;
-            commit.files_changed_list.push(FilesChanged {
-                insertions,
-                deletions,
-                filename: String::from(file),
-            });
+            // commit.files_changed_list.push(FilesChanged {
+            //     insertions,
+            //     deletions,
+            //     filename: String::from(file),
+            // });
         }
     }
 

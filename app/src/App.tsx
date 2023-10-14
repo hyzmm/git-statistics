@@ -14,6 +14,7 @@ import PathList from './components/PathList.tsx';
 
 function App() {
 	const [data, setData] = useState<UserStat[] | undefined>();
+	const [totalCommits, setTotalCommits] = useState<number>(0);
 
 	const settings = useSettingsStore(useShallow(state => ({
 		sortBy: state.sortBy,
@@ -62,11 +63,26 @@ function App() {
 		if (repo) {
 			void openRepo(localStorage.getItem('repo')!, settings.includedPaths, settings.excludedPaths).then();
 		}
-	}, []);
+	}, [settings.excludedPaths, settings.includedPaths]);
 	// Listen to open repo event
 
 	useEffect(() => {
 		function cb(data: UserStat[]) {
+			const grouped = new Map<string, UserStat>();
+			for (const item of data) {
+				const stat = grouped.get(item.author);
+				if (stat) {
+					stat.commits += 1;
+					stat.insertions += item.insertions;
+					stat.deletions += item.deletions;
+					stat.files_changed += item.files_changed;
+				} else {
+					grouped.set(item.author, {...item, commits: 1});
+				}
+			}
+
+			setTotalCommits(data.length);
+			data = Array.from(grouped.values());
 			setData(data);
 		}
 
@@ -110,7 +126,7 @@ function App() {
 					<label htmlFor='my-drawer-2' aria-label='close sidebar' className='drawer-overlay'/>
 					<div className='menu p-0 w-80 min-h-full text-base-content gap-3'>
 						{/* Sidebar content here */}
-						<Summary data={data!}/>
+						<Summary totalCommits={totalCommits}/>
 						<CountLimit/>
 						<Sort/>
 						<div className='divider m-0 h-[2px]'/>

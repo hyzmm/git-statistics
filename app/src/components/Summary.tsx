@@ -1,18 +1,15 @@
-import {type UserStat} from '../types.ts';
-
 type SummaryProps = {
-	readonly data: UserStat[];
+	readonly totalCommits: number;
 };
 
-export default function Summary({data}: SummaryProps) {
-	const totalLinesChanged = data.reduce((p, c) => p + c.insertions + c.deletions, 0);
+export default function Summary({totalCommits}: SummaryProps) {
 	return (
 		<div className='stats shadow h-28 w-full rounded-none'>
 			<div className='stat'>
 				<div className='stat-title'>Total Commits</div>
-				<div className='stat-value'>{data.reduce((p, c) => p + c.commits, 0)}
+				<div className='stat-value'>{totalCommits}
 				</div>
-				<div className='stat-desc'>{totalLinesChanged} Lines Changed</div>
+				<div className='stat-desc'>{0} Lines Changed</div>
 			</div>
 
 		</div>
