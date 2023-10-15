@@ -37,7 +37,12 @@ export default function PathList({title, paths, ...props}: PathListProps) {
 						/>
 					))
 				}
-				<button className='btn btn-block btn-neutral btn-xs mt-2' onClick={props.onAddPath}>Add Path</button>
+				<button
+					className='btn btn-block btn-neutral btn-xs mt-2' onClick={() => {
+						props.onAddPath();
+					}}
+				>Add Path
+				</button>
 			</div>
 		</div>
 	);
@@ -53,12 +58,12 @@ function PathInput({onDelete, ...props}: {
 	return (
 		<div
 			className='relative pt-2'
-			 onMouseEnter={() => {
-				 setHovered(true);
-			 }}
-			 onMouseLeave={() => {
-				 setHovered(false);
-			 }}
+			onMouseEnter={() => {
+				setHovered(true);
+			}}
+			onMouseLeave={() => {
+				setHovered(false);
+			}}
 		>
 			<InputWithConfirm
 				autoCorrect='off'

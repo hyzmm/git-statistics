@@ -27,9 +27,12 @@ export type SettingsState = {
 	setCountLimitation(value: number): void;
 	setSortBy(sortBy: SortBy): void;
 
-	addIncludedPath(path: string): void;
-	setIncludedPaths(paths: string[]): void;
-	setExcludedPaths(paths: string[]): void;
+	addIncludedPath(path?: string): void;
+	removeIncludedPath(index: number): void;
+	changeIncludedPath(index: number, path: string): void;
+	addExcludedPath(path?: string): void;
+	removeExcludedPath(index: number): void;
+	changeExcludedPath(index: number, path: string): void;
 	getPathspec(): string[];
 };
 
@@ -67,20 +70,51 @@ export const useSettingsStore = create<SettingsState>()(
 						sortBy,
 					});
 				},
-				addIncludedPath(path: string) {
+				addIncludedPath(path = '') {
 					set({
 						includedPaths: [...get().includedPaths, path],
 					});
 				},
-				setIncludedPaths(paths: string[]) {
+				removeIncludedPath(index: number) {
+					const item = get().includedPaths[index];
 					set({
-						includedPaths: paths,
+						includedPaths: get().includedPaths.filter((_, i) => i !== index),
+					});
+					if (item) {
+						reopen();
+					}
+				},
+				changeIncludedPath(index: number, path: string) {
+					const item = get().includedPaths[index];
+					set({
+						includedPaths: get().includedPaths.map((e, i) => i === index ? path : e),
+					});
+					if (item !== path) {
+						reopen();
+					}
+				},
+				addExcludedPath(path = '') {
+					set({
+						excludedPaths: [...get().excludedPaths, path],
 					});
 				},
-				setExcludedPaths(paths: string[]) {
+				removeExcludedPath(index: number) {
+					const item = get().excludedPaths[index];
 					set({
-						excludedPaths: paths,
+						excludedPaths: get().excludedPaths.filter((_, i) => i !== index),
 					});
+					if (item) {
+						reopen();
+					}
+				},
+				changeExcludedPath(index: number, path: string) {
+					const item = get().excludedPaths[index];
+					set({
+						excludedPaths: get().excludedPaths.map((e, i) => i === index ? path : e),
+					});
+					if (item !== path) {
+						reopen();
+					}
 				},
 				getPathspec(): string[] {
 					return [...get().includedPaths.filter(e => e.trim().length > 0), ...get().excludedPaths.filter(e => e.trim().length > 0).map(path => `:!${path}`)];
@@ -93,7 +127,16 @@ export const useSettingsStore = create<SettingsState>()(
 		),
 	),
 );
-const {repo, includedPaths, excludedPaths} = useSettingsStore.getState();
-if (repo) {
-	void openRepo(repo, includedPaths.concat(excludedPaths.map(path => `:!${path}`))).then();
+
+reopen();
+
+function reopen() {
+	let {repo, includedPaths, excludedPaths} = useSettingsStore.getState();
+
+	includedPaths = includedPaths.filter(e => e.trim().length > 0);
+	excludedPaths = excludedPaths.filter(e => e.trim().length > 0).map(path => `:!${path}`);
+
+	if (repo) {
+		void openRepo(repo, includedPaths.concat(excludedPaths)).then();
+	}
 }
