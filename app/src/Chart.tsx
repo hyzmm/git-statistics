@@ -3,6 +3,7 @@ import * as echarts from 'echarts';
 import {type Commit} from './types.ts';
 import {type SeriesLabelOption} from 'echarts/types/src/util/types';
 import {ChartHistogramTwo, ChartProportion} from '@icon-park/react';
+import useColorScheme from './hooks/useColorScheme.tsx';
 
 type PieChartProps = {
 	readonly data: Commit[];
@@ -12,14 +13,15 @@ export default function Chart({data}: PieChartProps) {
 	const chart = useRef<echarts.EChartsType>();
 	const ref = useRef<HTMLDivElement>(null);
 	const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
+	const colorScheme = useColorScheme();
 
 	useEffect(() => {
-		chart.current ??= echarts.init(ref.current, 'dark');
+		chart.current ??= echarts.init(ref.current, colorScheme);
 		chart.current.setOption(
 			chartType === 'bar' ? getBarChartOptions(data) : getPieChartOptions(data),
 			true,
 		);
-	}, [data, chartType]);
+	}, [data, chartType, colorScheme]);
 
 	useEffect(() => {
 		function cb() {
