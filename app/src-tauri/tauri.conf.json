@@ -69,6 +69,8 @@
     "windows": [
       {
         "fullscreen": false,
+        "decorations": true,
+        "titleBarStyle": "Transparent",
         "height": 600,
         "resizable": true,
         "title": "Git Statistics",
