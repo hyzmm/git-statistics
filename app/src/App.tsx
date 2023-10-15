@@ -10,10 +10,12 @@ import SideBar from './components/SideBar.tsx';
 import StatusBar from './components/StatusBar.tsx';
 
 function App() {
-	const {commits, ...settings} = useSettingsStore(useShallow(state => ({
+	const {commits, countLimitation, countLimitationEnabled, ...settings} = useSettingsStore(useShallow(state => ({
 		commits: state.commits,
 		repo: state.repo,
 		sortBy: state.sortBy,
+		countLimitationEnabled: state.countLimitationEnabled,
+		countLimitation: state.countLimitation,
 	})));
 
 	useHotkeys('mod+o', pickRepo);
@@ -52,6 +54,16 @@ function App() {
 		return groupedArray;
 	}, [commits, settings.sortBy]);
 
+	const sortedData = useMemo(() => {
+		if (countLimitationEnabled) {
+			if (countLimitation) {
+				return groupedData.slice(0, countLimitation);
+			}
+		}
+
+		return undefined;
+	}, [countLimitation, countLimitationEnabled, groupedData]);
+
 	if (!groupedData) {
 		return (
 			<div className='flex flex-col justify-center items-center w-full h-full gap-2'>
@@ -72,7 +84,7 @@ function App() {
 
 				<div className='flex-1 h-full'>
 					{/* Page content here */}
-					<Chart data={groupedData}/>
+					<Chart data={sortedData ?? groupedData}/>
 				</div>
 			</div>
 			<StatusBar/>
