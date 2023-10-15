@@ -31,22 +31,26 @@ export default function SideBar() {
 		countLimitation: state.countLimitation,
 	})));
 	return (
-		<>
+		<div className='text-base-content flex flex-col h-full'>
 			<Summary/>
-			<CountLimit/>
-			<Sort/>
-			<div className='divider m-0 h-[2px]'/>
-			<PathList
-				title='Included Paths' paths={includedPaths}
-				onAddPath={addIncludedPath}
-				onDeletePath={removeIncludedPath}
-				onChangePath={changeIncludedPath}/>
-			<PathList
-				title='Excluded Paths' paths={excludedPaths}
-				onAddPath={addExcludedPath}
-				onDeletePath={removeExcludedPath}
-				onChangePath={changeExcludedPath}
-			/>
-		</>
+			<div className='pt-3 flex-1 overflow-y-auto'>
+				<div className='flex flex-col gap-3'>
+					<CountLimit/>
+					<Sort/>
+					<div className='divider m-0 h-[2px]'/>
+					<PathList
+						title='Included Paths' paths={includedPaths}
+						onAddPath={addIncludedPath}
+						onDeletePath={removeIncludedPath}
+						onChangePath={changeIncludedPath}/>
+					<PathList
+						title='Excluded Paths' paths={excludedPaths}
+						onAddPath={addExcludedPath}
+						onDeletePath={removeExcludedPath}
+						onChangePath={changeExcludedPath}
+					/>
+				</div>
+			</div>
+		</div>
 	);
 }

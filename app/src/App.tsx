@@ -7,6 +7,7 @@ import {useHotkeys} from 'react-hotkeys-hook';
 import {SortBy, useSettingsStore} from './SettingsState.ts';
 import {useShallow} from 'zustand/react/shallow';
 import SideBar from './components/SideBar.tsx';
+import StatusBar from './components/StatusBar.tsx';
 
 function App() {
 	const {commits, ...settings} = useSettingsStore(useShallow(state => ({
@@ -62,21 +63,19 @@ function App() {
 	}
 
 	return (
-		<div className='flex'>
-			<div className='drawer drawer-open w-screen'>
-				<input id='my-drawer-2' type='checkbox' className='drawer-toggle'/>
-				<div className='drawer-content items-center justify-center'>
+		<div className='flex flex-col w-full h-full'>
+			{/* Top */}
+			<div className='w-screen flex flex-1 overflow-hidden'>
+				<div className='bg-base-200 w-72 h-full'>
+					<SideBar/>
+				</div>
+
+				<div className='flex-1 h-full'>
 					{/* Page content here */}
 					<Chart data={groupedData}/>
-
-				</div>
-				<div className='drawer-side bg-base-200'>
-					<label htmlFor='my-drawer-2' aria-label='close sidebar' className='drawer-overlay'/>
-					<div className='menu p-0 w-80 min-h-full text-base-content gap-3'>
-						<SideBar/>
-					</div>
 				</div>
 			</div>
+			<StatusBar/>
 		</div>
 	);
 }

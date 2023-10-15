@@ -13,8 +13,9 @@ export enum SortBy {
 
 export type SettingsState = {
 	commits: Commit[];
-
 	repo: string | undefined;
+	loading: boolean;
+
 	countLimitationEnabled: boolean;
 	countLimitation: number;
 	sortBy: SortBy;
@@ -22,6 +23,7 @@ export type SettingsState = {
 	includedPaths: string[];
 	excludedPaths: string[];
 
+	setLoading(loading: boolean): void;
 	setRepo(repo: string, commits: Commit[]): void;
 	setCountLimitationEnabled(enabled: boolean): void;
 	setCountLimitation(value: number): void;
@@ -41,14 +43,20 @@ export const useSettingsStore = create<SettingsState>()(
 		persist(
 			(set, get) => ({
 				repo: undefined,
+				commits: [],
+				loading: false,
+
 				countLimitationEnabled: true,
 				countLimitation: 10,
 				sortBy: SortBy.Commits,
 				includedPaths: [],
 				excludedPaths: [],
 
-				commits: [],
-
+				setLoading(loading: boolean) {
+					set({
+						loading,
+					});
+				},
 				setRepo(repo: string, commits: Commit[]) {
 					set({
 						repo,

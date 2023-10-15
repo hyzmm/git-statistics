@@ -17,7 +17,6 @@
     "@uidotdev/usehooks": "^2.3.1",
     "clsx": "^2.0.0",
     "echarts": "^5.4.3",
-    "eventemitter3": "^5.0.1",
     "lodash-es": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
