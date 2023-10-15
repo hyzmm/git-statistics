@@ -2,6 +2,12 @@
 
 [中文](./README-CN.md)
 
+<div align="center">
+
+![app-icon](app/src-tauri/icons/128x128.png)
+
+</div>
+
 Collect commits from Git repository and present statistics in a comfortable way.
 
 ## Features
@@ -123,10 +129,9 @@ The format of the exclusion path is the same as that of the matching path, but p
 
 Here are some screenshots of the app:
 
-![screenshots](https://github.com/hyzmm/git-statistics/assets/48704743/99521b73-2bf7-404a-a5fd-6d62663b9dc2)
+![screenshots](https://github.com/hyzmm/git-statistics/assets/48704743/761e7ae5-6f87-4e31-92d1-0bd3221c5c4e)
 
 ## TODO
 
-- To optimize the speed of commit traversal, the current speed of traversing large projects is much slower than the Git CLI. 
 - More statistical methods.
 - Provide more installation channels.
