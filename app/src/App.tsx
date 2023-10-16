@@ -10,7 +10,7 @@ import SideBar from './components/SideBar.tsx';
 import StatusBar from './components/StatusBar.tsx';
 
 function App() {
-	const {commits, countLimitation, countLimitationEnabled, ...settings} = useSettingsStore(useShallow(state => ({
+	const {commits, countLimitation, countLimitationEnabled,repo, ...settings} = useSettingsStore(useShallow(state => ({
 		commits: state.commits,
 		repo: state.repo,
 		sortBy: state.sortBy,
@@ -64,7 +64,7 @@ function App() {
 		return undefined;
 	}, [countLimitation, countLimitationEnabled, groupedData]);
 
-	if (!groupedData) {
+	if (!repo) {
 		return (
 			<div className='flex flex-col justify-center items-center w-full h-full gap-2'>
 				<h1 className='text-4xl'>Welcome to <b>Git Statistic</b></h1>

@@ -5,11 +5,11 @@ use std::error::Error;
 use std::process::exit;
 
 use clap::{Parser, ValueEnum};
-use comfy_table::{Attribute, Cell, ContentArrangement, Table};
 use comfy_table::presets::UTF8_FULL;
+use comfy_table::{Attribute, Cell, ContentArrangement, Table};
 use itertools::Itertools;
 
-use git_statistics::stats::{Commit, get_commits};
+use git_statistics::stats::{get_commits, Commit};
 
 /// This tool provides comprehensive statistics for each user in the current repository.
 ///
@@ -52,11 +52,7 @@ enum SortBy {
 
 fn main() {
     let cli: Cli = Cli::parse();
-    print_stats_table(
-        cli.pathspec.as_ref(),
-        cli.sort,
-        cli.max_count,
-    ).unwrap();
+    print_stats_table(cli.pathspec.as_ref(), cli.sort, cli.max_count).unwrap();
 }
 
 struct UserCommitStats {
@@ -79,11 +75,28 @@ impl Default for UserCommitStats {
     }
 }
 
-fn print_stats_table(patchspec: Option<&Vec<String>>, sort_by: SortBy, max_count: Option<usize>) -> Result<(), Box<dyn Error>> {
+fn print_stats_table(
+    patchspec: Option<&Vec<String>>,
+    sort_by: SortBy,
+    max_count: Option<usize>,
+) -> Result<(), Box<dyn Error>> {
     let mut table = Table::new();
-    table.load_preset(UTF8_FULL)
+    table
+        .load_preset(UTF8_FULL)
         .set_content_arrangement(ContentArrangement::Dynamic)
-        .set_header(vec!["Author", "Commits", "Files Changed", "Insertions", "Deletions", "Lines Changed"].into_iter().map(|x| Cell::new(x).add_attribute(Attribute::Bold)).collect::<Vec<Cell>>());
+        .set_header(
+            vec![
+                "Author",
+                "Commits",
+                "Files Changed",
+                "Insertions",
+                "Deletions",
+                "Lines Changed",
+            ]
+            .into_iter()
+            .map(|x| Cell::new(x).add_attribute(Attribute::Bold))
+            .collect::<Vec<Cell>>(),
+        );
 
     let commits = get_commits(".", patchspec);
     if let Err(e) = commits {
@@ -94,14 +107,12 @@ fn print_stats_table(patchspec: Option<&Vec<String>>, sort_by: SortBy, max_count
 
     let mut commit_stat = group_commits(&commits).into_iter().collect_vec();
 
-    commit_stat.sort_by_key(|(_, commit)| {
-        match sort_by {
-            SortBy::Commits => { commit.commits }
-            SortBy::FilesChanged => { commit.files_changed }
-            SortBy::Insertions => { commit.insertions }
-            SortBy::Deletions => { commit.deletions }
-            SortBy::LinesChanged => { commit.insertions + commit.deletions }
-        }
+    commit_stat.sort_by_key(|(_, commit)| match sort_by {
+        SortBy::Commits => commit.commits,
+        SortBy::FilesChanged => commit.files_changed,
+        SortBy::Insertions => commit.insertions,
+        SortBy::Deletions => commit.deletions,
+        SortBy::LinesChanged => commit.insertions + commit.deletions,
     });
     commit_stat.reverse();
 
@@ -109,18 +120,23 @@ fn print_stats_table(patchspec: Option<&Vec<String>>, sort_by: SortBy, max_count
         commit_stat.truncate(max_count);
     }
 
-    let sum = commit_stat.iter().map(|e| &e.1).fold(UserCommitStats::default(), |acc, stats| {
-        UserCommitStats {
+    let sum = commit_stat
+        .iter()
+        .map(|e| &e.1)
+        .fold(UserCommitStats::default(), |acc, stats| UserCommitStats {
             commits: acc.commits + stats.commits,
             files_changed: acc.files_changed + stats.files_changed,
             insertions: acc.insertions + stats.insertions,
             deletions: acc.deletions + stats.deletions,
             lines_changed: acc.lines_changed + stats.insertions + stats.deletions,
-        }
-    });
+        });
 
     let cell_format = |x: usize, total: usize| {
-        let left_width = if total == 0 { 1 } else { (total as i32).ilog10() as usize + 1 };
+        let left_width = if total == 0 {
+            1
+        } else {
+            (total as i32).ilog10() as usize + 1
+        };
         const RIGHT_WIDTH: usize = 7;
         if total == 0 {
             return format!("{:<left_width$}{:>RIGHT_WIDTH$}", 0, "(0%)");
@@ -136,7 +152,10 @@ fn print_stats_table(patchspec: Option<&Vec<String>>, sort_by: SortBy, max_count
             cell_format(stats.files_changed, sum.files_changed),
             cell_format(stats.insertions, sum.insertions),
             cell_format(stats.deletions, sum.deletions),
-            cell_format(stats.insertions + stats.deletions, sum.insertions + sum.deletions),
+            cell_format(
+                stats.insertions + stats.deletions,
+                sum.insertions + sum.deletions,
+            ),
         ]);
     }
     println!("{table}");
@@ -160,19 +179,22 @@ fn group_commits(commits: &Vec<Commit>) -> HashMap<String, GroupedCommits> {
         let insertions = commit.insertions;
         let deletions = commit.deletions;
         let files_changed = commit.files_changed;
-        result.entry(author.clone()).and_modify(|stats| {
-            stats.commits += 1;
-            stats.insertions += insertions;
-            stats.deletions += deletions;
-            stats.lines_changed += insertions + deletions;
-            stats.files_changed += 1;
-        }).or_insert(GroupedCommits {
-            commits: 1,
-            insertions,
-            deletions,
-            lines_changed: insertions + deletions,
-            files_changed,
-        });
+        result
+            .entry(author.clone())
+            .and_modify(|stats| {
+                stats.commits += 1;
+                stats.insertions += insertions;
+                stats.deletions += deletions;
+                stats.lines_changed += insertions + deletions;
+                stats.files_changed += 1;
+            })
+            .or_insert(GroupedCommits {
+                commits: 1,
+                insertions,
+                deletions,
+                lines_changed: insertions + deletions,
+                files_changed,
+            });
     }
 
     result

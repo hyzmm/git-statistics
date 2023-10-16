@@ -23,8 +23,7 @@ pub struct Commit {
 pub fn get_commits<P: AsRef<Path>>(
     repo: P,
     pathspec: Option<&Vec<String>>,
-) -> Result<Vec<Commit>, String>
-{
+) -> Result<Vec<Commit>, String> {
     let mut cmd = Command::new("git");
 
     cmd.current_dir(repo)
@@ -32,8 +31,7 @@ pub fn get_commits<P: AsRef<Path>>(
         .arg("--no-merges")
         .arg("--format=author %aN")
         .arg("--numstat")
-        .arg("--")
-    ;
+        .arg("--");
     if let Some(pathspec) = pathspec {
         cmd.args(pathspec);
     }
@@ -52,7 +50,9 @@ fn parse_git_log(log: &String) -> Vec<Commit> {
     let mut commits = vec![];
 
     for line in log.lines() {
-        if line.is_empty() { continue; }
+        if line.is_empty() {
+            continue;
+        }
 
         if line.starts_with("author ") {
             let author = line.trim_start_matches("author ");
