@@ -1,5 +1,11 @@
 # Git Statistics
 
+<div align="center">
+
+![app-icon](app/src-tauri/icons/128x128.png)
+
+</div>
+
 从 Git 仓库中收集提交信息并以友好的方式呈现统计数据。
 
 ## 特性
@@ -126,6 +132,5 @@ git stats -s commits -c 5 -- src crates ':!crates/bevy_core'
 
 ## 待办
 
-- 优化提交遍历速度，现在遍历大项目的速度比 Git CLI 慢很多。
 - 更多的统计方法。
 - 提供更多的安装渠道。
