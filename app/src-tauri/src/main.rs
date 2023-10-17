@@ -11,14 +11,8 @@ mod git;
 mod events;
 
 fn main() {
-    let mut menu = Menu::os_default("Git Statistics");
-    if let MenuEntry::Submenu(file_menu) = &mut menu.items[1] {
-        let open_repo = CustomMenuItem::new("open".to_string(), "Open Repository").accelerator("CmdOrCtrl+0");
-        file_menu.inner.borrow_mut().items.insert(0, MenuEntry::CustomItem(open_repo));
-    }
-
     tauri::Builder::default()
-        .menu(menu)
+        .menu(setup_menu())
         .on_menu_event(|event| {
             match event.menu_item_id() {
                 "open" => {
@@ -30,5 +24,26 @@ fn main() {
         .invoke_handler(tauri::generate_handler![git::git_stats, git::git_total_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn setup_menu() -> Menu {
+    let mut menu = Menu::os_default("Git Statistics");
+
+    let file_menu_index;
+    #[cfg(target_os = "macos")]
+    {
+        file_menu_index = 1;
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        file_menu_index = 0;
+    }
+
+
+    if let MenuEntry::Submenu(file_menu) = &mut menu.items[file_menu_index] {
+        let open_repo = CustomMenuItem::new("open".to_string(), "Open Repository").accelerator("CmdOrCtrl+0");
+        file_menu.inner.borrow_mut().items.insert(0, MenuEntry::CustomItem(open_repo));
+    }
+    menu
 }
 
