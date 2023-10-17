@@ -1,9 +1,13 @@
 use std::path::Path;
 use std::process::Command;
-
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use itertools::Itertools;
 use serde::Serialize;
 
+// List of all process creation flags:
+// https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 #[derive(Serialize)]
 pub struct FilesChanged {
     pub insertions: usize,
@@ -25,7 +29,8 @@ pub fn get_commits<P: AsRef<Path>>(
     pathspec: Option<&Vec<String>>,
 ) -> Result<Vec<Commit>, String> {
     let mut cmd = Command::new("git");
-
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(CREATE_NO_WINDOW);
     cmd.current_dir(repo)
         .arg("log")
         .arg("--no-merges")
