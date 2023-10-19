@@ -7,6 +7,7 @@ use serde::Serialize;
 
 // List of all process creation flags:
 // https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
+#[allow(dead_code)]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 #[derive(Serialize)]
 pub struct FilesChanged {
