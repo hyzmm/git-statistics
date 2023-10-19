@@ -23,14 +23,20 @@ Collect commits from Git repository and present statistics in a comfortable way.
 
 ## Installation
 
-Clone the repository:
+Installing from [crates.io](https://crates.io/):
+
+```shell
+cargo install git-statistics
+```
+
+Or you can build it yourself from source, clone the repository:
 
 ```shell
 git clone https://github.com/hyzmm/git-statistics
 cd git-statistics
 ```
 
-Install CLI:
+Install CLI locally:
 
 ```shell
 cargo install --path .

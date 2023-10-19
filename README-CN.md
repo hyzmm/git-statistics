@@ -22,7 +22,13 @@
 
 ## 安装
 
-克隆仓库：
+从 [crates.io](https://crates.io/) 安装:
+
+```shell
+cargo install git-statistics
+```
+
+或者你可以自己从源码构建，克隆仓库：
 
 ```shell
 git clone https://github.com/hyzmm/git-statistics
